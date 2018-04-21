@@ -104,11 +104,8 @@ exports.postLogin = async (req,res, next)=>{
         // console.log('ERROR ========== 002');
         return res.send({status: false, msg: 'Đăng nhập thất bại. Vui lòng thử lại!'});
       }
-      if (req.body.remember_me) {
-        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000; // Cookie expires after 30 days
-      } else {
-        req.session.cookie.expires = false; // Cookie expires at end of session
-      }
+
+      req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
 
       req.logIn(user, function(err) {
         if (err) {
@@ -116,7 +113,9 @@ exports.postLogin = async (req,res, next)=>{
           // console.log(err);
           return res.send({status: false, msg: 'Đăng nhập thất bại. Vui lòng thử lại!'});
         }
-        return res.send({status: true, redirect: '/'});
+        // return res.send({status: true, redirect: '/'});
+        req.flash("Đăng nhập thành công");
+        return res.redirect('/');
       });
     })(req, res, next);
 

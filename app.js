@@ -4,10 +4,10 @@ var flash = require('req-flash');
 var moment = require('moment');
 var fs = require('fs');
 var app = express();
- const lusca = require('lusca');
+const lusca = require('lusca');
 var multer = require('multer');
 const passport = require('passport');
- const passportConfig = require('./passport');
+const passportConfig = require('./config/passport');
 const path = require('path');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -17,33 +17,38 @@ app.use(express.static(path.join(__dirname, 'public'), { maxAge: 31557600000 }))
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(cookieParser());
 
 app.use(session({
-  secret : "secret",
-  saveUninitialized: true,
-  resave: true
+	secret : "secret",
+	saveUninitialized: true,
+	resave: true,
+	cookie : {
+        maxAge: 3600000 // see below
+    }
 }))
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(flash());
 
 
-app.use((req, res, next) => {
-  if (req.path === '/user/login' || req.path === '/user/create') {
-    next();
-  } else {
-    lusca.csrf()(req, res, next);
-  }
-});
-app.use(lusca.xframe('SAMEORIGIN'));// lusca registered AFTER cookieParser
-app.use(lusca.xssProtection(true));
-app.use((req, res, next) => {
-  res.locals.user = req.user;
-  res.locals.url = req.originalUrl;
-  res.locals.baseURL = process.env.BASE_URL;
-  res.locals.baseHOST = process.env.BASE_HOST;
-  next();
-});
+// app.use((req, res, next) => {
+//   if (req.path === '/user/login' || req.path === '/user/create') {
+//     next();
+//   } else {
+//     lusca.csrf()(req, res, next);
+//   }
+// });
+// app.use(lusca.xframe('SAMEORIGIN'));// lusca registered AFTER cookieParser
+// app.use(lusca.xssProtection(true));
+// app.use((req, res, next) => {
+//   res.locals.user = req.user;
+//   res.locals.url = req.originalUrl;
+//   res.locals.baseURL = process.env.BASE_URL;
+//   res.locals.baseHOST = process.env.BASE_HOST;
+//   next();
+// });
 
 // var csrf = require('csurf');
 
@@ -52,16 +57,7 @@ app.use((req, res, next) => {
 
 // Sets up a session store with Mongodb
 
-// app.use(session({
-// 	resave: false,
-// 	saveUninitialized: false,
-// 	secret: process.env.SESSION_SECRET,
-// }));
-
-app.use(passport.initialize());
-app.use(passport.session());
 moment().format();
-
 
 
 /*FRONTEND*/
@@ -91,6 +87,11 @@ app.use('/user', frontend_users);
 app.use('/admin', admin);
 app.use('/admin/user',backend_users);
 app.use('/admin/product',backend_products);
+
+app.use((req, res, next) => {
+	res.locals.user = req.user;
+	next();
+});
 
 
 app.listen(4000);
