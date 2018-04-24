@@ -77,8 +77,12 @@ var backend_users = require('./routes/backend/user');
 var backend_products = require('./routes/backend/product');
 
 
-/*FRONTEND Appuse*/
+app.use((req, res, next) => {
+	res.locals.user = req.user;
+	next();
+});
 
+/*FRONTEND Appuse*/
 app.use('/', index);
 app.use('/user', frontend_users);
 
@@ -88,10 +92,7 @@ app.use('/admin', admin);
 app.use('/admin/user',backend_users);
 app.use('/admin/product',backend_products);
 
-app.use((req, res, next) => {
-	res.locals.user = req.user;
-	next();
-});
+
 
 
 app.listen(4000);
