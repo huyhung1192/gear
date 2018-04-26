@@ -170,12 +170,10 @@ exports.getUserAdd = async (req,res) =>{
         res.send({status:false, errors : 'Email đã tồn tại'});
       } 
 
-
-
       let dataUpdate = {
         email : req.body.new_email,
         userName : req.body.new_userName,
-        password : req.body.new_password,
+        // password : req.body.new_password,
         nameUser : req.body.new_nameUser,
         phoneNumber : req.body.new_phoneNumber,
         address : req.body.new_address,
@@ -187,6 +185,24 @@ exports.getUserAdd = async (req,res) =>{
       }
 
       console.log(req.body.new_birthDay);
+
+      if (req.body.new_password && req.body.new_password !="") {
+        let this_user = await User.findOne({_id : req.body.id});
+        if (!this_user) {
+          res.send({status:false})
+        }
+
+        this_user.password = req.body.new_password;
+
+        let savePass = await this_user.save();
+        if (!savePass) {
+          res.send({status:false})
+        }
+
+        console.log("Done ")
+      }
+
+      console.log(dataUpdate)
 
       let updateUser = await User.update({ _id: req.body.id}, { $set: dataUpdate});
 
